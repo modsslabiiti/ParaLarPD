@@ -1,56 +1,115 @@
-Requirements:
+# ParaLarPD: Parallel FPGA Router
 
-C++ compiler support the C++11 standard
-Boost C++ library -- install it using any package manager (eg. apt-get install libboost-all-dev) or build it from source (www.boost.org)
-Intel TBB library -- download and extract the correct version for your platform from https://www.threadingbuildingblocks.org/download#stable-releases
+## Requirements
 
-Note*****Boost version 1.6***********
-------------------------------------
+- C++ compiler with C++11 standard support
+- Boost C++ library (version 1.60)
+    - Install via package manager (e.g., `apt-get install libboost-all-dev`) or from [www.boost.org](https://www.boost.org)
+- Intel TBB library
+    - Download and extract from [https://www.threadingbuildingblocks.org/download\#stable-releases](https://www.threadingbuildingblocks.org/download#stable-releases)
 
-Compilation steps:
+***
 
-1. cd build
-2. export TBB_INC_DIR=<path to Intel TBB include directory>
-   -- eg. export TBB_INC_DIR=/home/user/tbb/include (assuming the Intel TBB library has been extracted to /home/user/tbb)
-3. export TBB_LIB_DIR=<path to Intel TBB library directory> 
-   //-- eg. export TBB_INC_DIR=/home/user/tbb/lib (assuming the Intel TBB library has been extracted to /home/user/tbb)
-	//-- eg. export TBB_LIB_DIR=/home/user/tbb/lib (assuming the Intel TBB library has been extracted to /home/user/tbb)
-	this is working	   export TBB_LIB_DIR=/home/user/tbb/lib/intel64/gcc4.7
-4. cmake ..			// generate make file folders
-5. make				//Could you try running "make VERBOSE=1" and showing me the output?// gererate "Router executable file"
-				// make clean command to clean make
+## Compilation Steps
 
-After following the steps above, the final executable (Router) will be placed in the 'build' subdirectory.
+1. `cd build`
+2. Set the environment variable for the Intel TBB **include** directory:
+`export TBB_INC_DIR=<path to Intel TBB include directory>`
+_Example:_
+`export TBB_INC_DIR=/home/user/tbb/include`
+3. Set the environment variable for the Intel TBB **library** directory:
+`export TBB_LIB_DIR=<path to Intel TBB library directory>`
+_Example:_
+`export TBB_LIB_DIR=/home/user/tbb/lib/intel64/gcc4.7`
+4. Run CMake to generate makefiles:
+`cmake ..`
+5. Compile the project:
+`make`
+_(For verbose output: `make VERBOSE=1`)_
+    - Use `make clean` to clean the build
 
-------------------------------------
+The final executable (`Router`) will be located in the `build` subdirectory after a successful build.
 
-Before running the router:
+***
 
-The netlist required by our router has to be compiled using VTR (http://www.eecg.utoronto.ca/vtr/terms.html).
+## Preparing Netlists Using VTR
 
-The command to do so is "./vpr <arch.xml> <benchmark_name> --pack --place".
+- The required netlist must be compiled using VTR:
+[VTR (VPR) Documentation](http://www.eecg.utoronto.ca/vtr/terms.html)
+- Command format:
 
-//move to examples folder which have "vpr" executable file and right click on it tik mark it run as executable and from "examples" folder run:
+```
+./vpr <arch.xml> <benchmark_name> --pack --place
+```
 
-eg. "./vpr fpga.xml ex5p --pack --place" would pack and place the benchmark called "ex5p" (in the file ex5p.blif) into the FPGA architecture described by the file "fpga.xml". The command would generate the files "ex5p.net" and "ex5p.place" which is required by our router. Note that "fpga.xml" and "ex5p.blif" has to be in the same directory as the "vpr" executable.
-** VPR Default use Timing_Driven Router***
+_Example:_
+
+```
+./vpr fpga.xml ex5p --pack --place
+```
+
+This command packs and places the benchmark (`ex5p.blif`) into the given FPGA architecture (`fpga.xml`) to produce `ex5p.net` and `ex5p.place` files which are required by the router.
+- Timing-Driven Router (Default):
+
+```
 ./vpr fpga.xml ex5p --pack --place --route
-** to use Routing Driven Router **
+```
+
+- Routing-Driven Router:
+
+```
 ./vpr fpga.xml ex5p --pack --place --route --router_algorithm breadth_first
+```
 
-In this package, an example FPGA architecture (fpga.xml) and a packed & placed benchmark (ex5p) have been included in the "examples" directory. Other benchmarks from the MCNC suite are also included but only in blif format which need to be compiled using VTR first.
 
-------------------------------------
-// Router in build directory....../home/rohita/paralar/build
-//go in that location copy it and paste it to examples directory
-Running the router:
+Example benchmarks and architecture files are provided in the `examples` directory. MCNC .blif benchmarks are included and need to be compiled using VTR as above.
+
+***
+
+## Running the Router
+
+1. After compilation, the `Router` executable will be in the `build` directory.
+2. Copy the `Router` executable to the `examples` directory (which contains all required input files).
+3. Run the router with:
+
+```
 ./Router <arch.xml> <benchmark_name> <num_threads> <num_of_iterations> <max_channel_capacity>
+```
 
-eg. "./Router fpga.xml ex5p 4 50 100" would route the "ex5p" benchmark with a channel width of 100 using 4 threads for 50 iterations. Note that the files "fpga.xml", "ex5p.blif", "ex5p.net", and "ex5p.place" has to be in the same directory as the "Router" executable.
+_Example:_
 
+```
+./Router fpga.xml ex5p 4 50 100
+```
 
+    - This runs the router on the `ex5p` benchmark with a channel width of 100, using 4 threads for 50 iterations.
+    - Ensure all files: `fpga.xml`, `ex5p.blif`, `ex5p.net`, `ex5p.place` are present in the same directory as `Router`.
 
+#### Debugging Example
 
+To debug using gdb:
+
+```
 gdb --args ./Router <arch.xml> <benchmark_name> <num_threads> <num_of_iterations> <max_channel_capacity>
+```
 
+
+***
+
+## Citation
+
+If you use this code in your research, please cite:
+
+```
+@article{agrawal2019paralarpd,
+  title={ParaLarPD: Parallel FPGA router using primal-dual sub-gradient method},
+  author={Agrawal, Rohit and Ahuja, Kapil and Hau Hoo, Chin and Duy Anh Nguyen, Tuan and Kumar, Akash},
+  journal={Electronics},
+  volume={8},
+  number={12},
+  pages={1439},
+  year={2019},
+  publisher={MDPI}
+}
+```
 
